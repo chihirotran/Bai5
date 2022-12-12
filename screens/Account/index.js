@@ -2,19 +2,72 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
 import { View, Text, StatusBar, Image ,TextInput,StyleSheet,TouchableOpacity,ImageBackground,} from "react-native";
 import axios from 'axios';
+import * as ImagePicker from 'expo-image-picker';
 import MainButton from "../../src/components/MainButton";
+import ImageViewer from "../../src/components/ImageViewer";
 import Ips from "../../src/input";
 export default function Accont({ navigation }) {
 
     const value =  AsyncStorage.getItem('iduser1'); 
     const [user, setuser] = useState('');
     const [userName, setuserName] = useState('');
+    const [linkimg,setlinkimh]=useState(null);
+    const [imgtrong,setimgtrong]=useState(null);
     const [userPhone, setuserPhone] = useState('');
+    const [apidata, setApidata] = useState([]);
+    const [image, setImage] = useState(null);
     let url = 'https://apihdnauan.onrender.com';
     const DangXuat = () => {
       AsyncStorage.clear();
       navigation.replace("SignIn");
     };
+    useEffect(function () {
+      fetch(`${url}/user/${user}`)
+        .then((e) => e.json())
+        .then((rep) => setApidata(rep))
+        .catch((err) => {
+          setApidata([]);
+        });
+    }, [linkimg]);
+    const pickImage = async () => {
+      // No permissions request is necessary for launching the image library
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+  
+      console.log(result);
+  
+      if (!result.canceled) {
+        setImage(result.uri);
+        const formdata = new FormData();
+        formdata.append('data',{
+          uri: result.uri,
+          type: result.type,
+          name: result.fileName,
+        })
+        let res = await fetch(
+          'https://uploadimgs3.onrender.com/upload',
+          {
+            method: 'post',
+            body: formdata,
+            headers: {
+              'Content-Type': 'multipart/form-data; ',
+            },
+          }
+        );
+        let responseJson = await res.json();
+        console.log(responseJson.linkimg);
+        alert("up anh thanh cong");
+        setlinkimh(responseJson.linkimg);
+        console.log(result);
+      }
+    };
+    const test = async () => {
+        console.log(apidata);
+    }
     const ChangeAccount = async () => {
       try {
         
@@ -22,13 +75,13 @@ export default function Accont({ navigation }) {
             name: userName.trim(),
             email: user.trim(),
             phone: userPhone.trim(),
-            
+            linkimg: linkimg.trim(),
           });
           alert("Cập nhật thành công!");
           AsyncStorage.setItem("nameuser", userName.trim());
           AsyncStorage.setItem("emailuser", user.trim());
           AsyncStorage.setItem("phoneuser", userPhone.trim());
-          
+          AsyncStorage.setItem("imganh", linkimg.trim());
           //navigation.navigate("Profile");
         
       } catch (error) {
@@ -38,6 +91,12 @@ export default function Accont({ navigation }) {
     useEffect(()=>{
       AsyncStorage.getItem('iduser1').then(result => {
         setuser(result);
+        console.log(result);
+      })
+    }, []);
+    useEffect(()=>{
+      AsyncStorage.getItem('iduser4').then(result => {
+        setImage(result);
         console.log(result);
       })
     }, []);
@@ -61,11 +120,14 @@ export default function Accont({ navigation }) {
         <View style={styles.profile_show}>
           
           <View style={styles.profile_show_image}>
+            <TouchableOpacity onPress={pickImage}>
             <Image
               style={styles.img}
-              source={require("../../assets/profile.png")}
+              
+              source={{ uri: image  }}
               
             />
+            </TouchableOpacity>
           </View>
           <Text style={styles.text_name}>{userName}</Text>
           <Text style={styles.text_info}>Điền thông tin để chỉnh sửa</Text>
@@ -103,6 +165,7 @@ export default function Accont({ navigation }) {
             
             <Text style={styles.textLogout}>Đăng Xuất</Text>
           </TouchableOpacity>
+          
         </View>
         <TouchableOpacity style={styles.btnSua} onPress={ChangeAccount}>
           <Image

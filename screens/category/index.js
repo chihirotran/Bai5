@@ -41,6 +41,7 @@ export default function CategoryX({ route }) {
   };
   const image0 = { uri: "https://png.pngtree.com/thumb_back/fw800/background/20190428/pngtree-seamless-pattern-with-motifs-of-fast-foodburgershot-dogs-and-others-image_108304.jpg" };
   return (
+    
     <View style={styles.container}>
       <ImageBackground source={image0} style={styles.su} resizeMode='repeat'>
         <View style={{marginTop:StatusBar.currentHeight,alignItems: 'center',

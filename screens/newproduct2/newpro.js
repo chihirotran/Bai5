@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StatusBar, Image ,TextInput,StyleSheet,TouchableOpacity,Button,ImageBackground} from "react-native";
+import { View, Text, StatusBar, Image ,TextInput,StyleSheet,TouchableOpacity,Button,ImageBackground,ScrollView} from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 import Ips from '../../src/input';
 import Btns from '../../src/btn';
+import DropDownPicker from 'react-native-dropdown-picker';
 import axios from 'axios';
 export default function ImagePickerExample() {
   const [image, setImage] = useState(null);
@@ -17,6 +18,21 @@ export default function ImagePickerExample() {
   const [guide, setguide] = useState("");
   const [KhuVuc, setKhuVuc] = useState("");
   const [category, setcategory] = useState("");
+  const [openKV, setOpenKV] = useState(false);
+  const [valueKV, setValueKV] = useState(null);
+  const [openCate, setOpenCate] = useState(false);
+  const [valueCate, setValueCate] = useState(null);
+  const [items, setItems] = useState([
+    {label: 'Bắc', value: 'Bắc'},
+    {label: 'Trung', value: 'Trung'},
+    {label: 'Nam', value: 'Nam'}
+  ]);
+  const [itemCate, setItemsCate] = useState([
+    {label: 'Chiên', value: 'Chiên'},
+    {label: 'Xào', value: 'Xào'},
+    {label: 'Luộc', value: 'Luộc'},
+    {label: 'Rán', value: 'Rán'},
+  ]);
   const url = "https://apihdnauan.onrender.com";
 
   const onGoBack = () => {
@@ -31,6 +47,11 @@ export default function ImagePickerExample() {
       alert("Không được để trống thành phần !")
     }else if (guide.trim() == "" || !guide) {
       alert("Không được để trống hướng dẫn chi tiết !")
+    }else if (valueCate.trim() == "" || !valueCate) {
+      alert("Vui Lòng Chọn Danh Mục !")
+    }
+    else if (valueKV.trim() == "" || !valueKV) {
+      alert("Vui Lòng Chọn Khu Vuc !")
     } else {
       createAccount();
     }
@@ -47,8 +68,8 @@ export default function ImagePickerExample() {
         ingredient: ingredient.trim(),
         guide: guide.trim(),
         like: `0`,
-        KhuVuc: KhuVuc.trim(),
-        category: category.trim(),
+        KhuVuc: valueKV.trim(),
+        category: valueCate.trim(),
         });
         alert("Thêm Công Thức Thành Công!");
 
@@ -87,14 +108,19 @@ export default function ImagePickerExample() {
       );
       let responseJson = await res.json();
       console.log(responseJson.linkimg);
+      alert("Up Ảnh Thành Công");
       setlinkimh(responseJson.linkimg);
       console.log(result);
     }
   };
+  const test = async () => {
+    console.log(valueKV);
+    console.log(valueCate);
+}
   const image0 = { uri: "https://png.pngtree.com/thumb_back/fw800/background/20190428/pngtree-seamless-pattern-with-motifs-of-fast-foodburgershot-dogs-and-others-image_108304.jpg" };
 
   return (
-    
+    <ScrollView>
     <View style={{ flex: 1,backgroundColor: 'black' }}>
       <ImageBackground source={image0} style={styles.su} resizeMode='repeat'>
       <View style={styles.viewtop}>
@@ -114,14 +140,48 @@ export default function ImagePickerExample() {
       <View style={styles.profile_edit_textinput}>
       <Ips  placeholder="Hướng Dẫn" onChangeText={setguide} /></View>
       <View style={styles.profile_edit_textinput}>
-      <Ips  placeholder="Khu Vực" onChangeText={setKhuVuc} /></View>
+      {/* <Ips  placeholder="Khu Vực" onChangeText={setKhuVuc} /> */}
+      <DropDownPicker
+      dropDownDirection="TOP"
+      onPress={test}
+      open={openKV}
+      value={valueKV}
+      items={items}
+      setOpen={setOpenKV}
+      setValue={setValueKV}
+      setItems={setItems}
+      //containerStyle={{width: '60%', left: '0%', paddingTop: 10}}
+     style={{ opacity: 0.65,backgroundColor: 'black',padding: 10, color:'white',height: 40,width:250, borderColor: '#0bcc95', borderWidth: 1,borderRadius: 10, fontWeight: '400', color:'white' }}
+      placeholder="Khu Vuc"
+      labelStyle= {{fontWeight: '400',
+      color: 'lightgray',}}
+
+    /></View>
       <View style={styles.profile_edit_textinput}>
-      <Ips  placeholder="Loại" onChangeText={setcategory} /></View>
+      <DropDownPicker
+      dropDownDirection="TOP"
+      onPress={test}
+      open={openCate}
+      value={valueCate}
+      items={itemCate}
+      setOpen={setOpenCate}
+      setValue={setValueCate}
+      setItems={setItemsCate}
+      
+    //  containerStyle={{width: '60%', left: '0%', paddingTop: 10, color: 'while' }}
+      dropDownStyle={{backgroundColor: '#846060', height: 100}}
+       style={{ opacity: 0.65,backgroundColor: 'black',padding: 10, color:'white',height: 40,width:250, borderColor: '#0bcc95', borderWidth: 1,borderRadius: 10, fontWeight: '400', color:'white' }}
+      placeholder="Loai"
+      labelStyle= {{fontWeight: '400',
+      color: 'lightgray',}}
+      
+    />
+      </View>
       <Btns color="#0bcc95" Text='Chọn Ảnh Món Ăn' onPress={pickImage} />
       {image && <Image source={{ uri: image }} style={{ width: 200, height: 200 }} />}
       <Btns color='lightgray'   Text='Thêm Món' onPress={onSignUp}></Btns>
       </ImageBackground>
-    </View>
+    </View></ScrollView>
   );
 }
 const styles = StyleSheet.create({
